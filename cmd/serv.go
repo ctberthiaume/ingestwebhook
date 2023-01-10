@@ -22,17 +22,35 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"log"
+	"os"
+
 	"github.com/spf13/cobra"
+
+	"ingestwebhook/serve"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "ingestwebhook",
-	Short: "Oceanographic cruise data ingest minio webhook",
+var (
+	addr string
+)
+
+// servCmd represents the serv
+var servCmd = &cobra.Command{
+	Use:   "serv",
+	Short: "Oceanographic cruise data ingest minio webhook server",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Fprintf(os.Stderr, "ingestwebhook version %v\n", version)
+		fmt.Fprintf(os.Stderr, "starting server at %v\n", addr)
+		err := serve.Start(addr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Fprintln(os.Stderr, "closing server")
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+func init() {
+	rootCmd.AddCommand(servCmd)
+	servCmd.PersistentFlags().StringVarP(&addr, "address", "a", ":9010", "server bind address")
 }
